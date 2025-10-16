@@ -22,10 +22,11 @@ const KANBAN_COLUMNS = ['Novo', 'Em Andamento', 'Standby', 'Concluído'];
 
 const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onStatusChange, onCardClick }) => {
   // Configuração do PointerSensor para diferenciar clique de arrasto
+  // Aumentando ligeiramente a distância para garantir que o clique seja registrado como tal.
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
       delay: 250, // 250ms de atraso antes de iniciar o arrasto
-      distance: 5, // 5px de distância antes de iniciar o arrasto
+      distance: 10, // Aumentado para 10px para ser mais robusto contra cliques acidentais
     },
   });
   
@@ -42,6 +43,7 @@ const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onSta
       if (grouped[request.status]) {
         grouped[request.status].push(request);
       } else {
+        // Se o status não for reconhecido, cai em 'Novo'
         grouped['Novo'].push(request);
       }
     });
