@@ -111,6 +111,10 @@ serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let prompt: string;
+  let requestBody: any;
+  let requestBodyText: string = ''; // Inicializa com string vazia
+
   try {
     console.log("Edge Function: Request received. Method:", req.method);
     const allHeaders = Object.fromEntries(req.headers.entries());
@@ -127,18 +131,23 @@ serve(async (req: Request) => {
       });
     }
 
-    let requestBody: any;
     try {
-      requestBody = await req.json(); // Tenta analisar JSON diretamente
-      console.log("Edge Function: Successfully parsed JSON body:", requestBody);
-    } catch (parseError) {
-      console.error("Edge Function: Error parsing JSON from request body:", (parseError as Error).message);
-      // Se falhar, não tentamos ler como texto novamente para evitar consumir o stream duas vezes
-      throw new Error(`Failed to parse request body as JSON: ${(parseError as Error).message}`);
-    }
+      requestBodyText = await req.text(); // Lê o corpo da requisição como texto primeiro
+      console.log("Edge Function: Raw request body text:", requestBodyText);
 
-    const prompt = requestBody.prompt;
-    console.log("Edge Function: Prompt extracted:", prompt);
+      if (!requestBodyText.trim()) { // Verifica se o corpo está vazio ou contém apenas espaços em branco
+        throw new Error("Request body is empty or contains only whitespace.");
+      }
+
+      requestBody = JSON.parse(requestBodyText); // Tenta analisar o texto como JSON
+      console.log("Edge Function: Successfully parsed JSON body:", requestBody);
+      prompt = requestBody.prompt;
+
+    } catch (parseError) {
+      console.error("Edge Function: Error processing request body:", (parseError as Error).message);
+      console.error("Edge Function: Raw body that caused error:", requestBodyText);
+      throw new Error(`Failed to process request body: ${(parseError as Error).message}`);
+    }
 
     if (!prompt) {
       return new Response(JSON.stringify({ error: "O prompt é obrigatório." }), {
