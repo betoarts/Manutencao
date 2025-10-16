@@ -131,6 +131,10 @@ serve(async (req: Request) => {
       });
     }
 
+    // Adicionando logs para depurar o estado do corpo da requisição
+    console.log("Edge Function: req.body is ReadableStream:", req.body instanceof ReadableStream);
+    console.log("Edge Function: req.bodyUsed:", req.bodyUsed);
+
     try {
       console.log("Edge Function: Attempting to read request body as text...");
       requestBodyText = await req.text(); // Lê o corpo da requisição como texto primeiro
