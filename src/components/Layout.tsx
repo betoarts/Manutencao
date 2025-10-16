@@ -167,7 +167,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </ul>
         </nav>
         <div className="mt-auto">
-          <Button onClick={handleLogout} className="w-full justify-start text-sidebar-foreground dark:text-sidebar-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:text-sidebar-accent-foreground">
+          <Button
+            onClick={handleLogout}
+            variant="ghost" // Usando a variante ghost para consistência
+            className="w-full justify-start" // Mantendo apenas as classes essenciais
+          >
             <LogOut className={cn("h-5 w-5", !isSidebarCollapsed && "mr-3")} />
             {!isSidebarCollapsed && "Sair"}
           </Button>
