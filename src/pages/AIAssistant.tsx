@@ -4,17 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot } from 'lucide-react';
+import { Send, Bot, User } from 'lucide-react'; // Importando User icon
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client'; // Importar o cliente Supabase
+import { supabase } from '@/integrations/supabase/client';
+import { useSupabase } from '@/integrations/supabase/SessionContextProvider'; // Para obter o token de sessão
 
 interface Message {
   id: number;
   sender: 'user' | 'ai';
   text: string;
+  functionResult?: any; // Para exibir resultados de funções
 }
 
 const AIAssistant: React.FC = () => {
+  const { session } = useSupabase(); // Obtém a sessão para o token
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -28,16 +31,30 @@ const AIAssistant: React.FC = () => {
     setIsSending(true);
 
     try {
-      // Invocar a Edge Function do Supabase
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      // Adiciona o token de autorização se o usuário estiver logado
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('gemini-chat', {
         body: { prompt: input },
+        headers: headers, // Passa os headers com o token
       });
 
       if (error) {
         throw new Error(error.message);
       }
 
-      const aiResponse: Message = { id: messages.length + 2, sender: 'ai', text: data.response };
+      const aiResponse: Message = { 
+        id: messages.length + 2, 
+        sender: 'ai', 
+        text: data.response,
+        functionResult: data.functionCalled?.result // Captura o resultado da função se houver
+      };
       setMessages((prev) => [...prev, aiResponse]);
 
     } catch (err: any) {
@@ -68,13 +85,21 @@ const AIAssistant: React.FC = () => {
                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[70%] p-3 rounded-lg ${
+                      className={`max-w-[70%] p-3 rounded-lg flex items-start gap-2 ${
                         msg.sender === 'user'
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                       }`}
                     >
-                      {msg.text}
+                      {msg.sender === 'ai' ? <Bot className="h-5 w-5 flex-shrink-0" /> : <User className="h-5 w-5 flex-shrink-0" />}
+                      <div>
+                        <p>{msg.text}</p>
+                        {msg.functionResult && (
+                          <pre className="mt-2 p-2 text-xs bg-gray-100 dark:bg-gray-800 rounded-md overflow-auto max-h-40">
+                            {JSON.stringify(msg.functionResult, null, 2)}
+                          </pre>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
