@@ -40,8 +40,12 @@ const AIAssistant: React.FC = () => {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
+      // Explicitamente stringify o corpo da requisição
+      const requestBody = JSON.stringify({ prompt: input });
+      console.log("AIAssistant: Sending request body (stringified):", requestBody); // Log para depuração
+
       const { data, error } = await supabase.functions.invoke('gemini-chat', {
-        body: { prompt: input },
+        body: requestBody,
         headers: headers, // Passa os headers com o token
       });
 
