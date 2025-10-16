@@ -113,11 +113,32 @@ serve(async (req: Request) => {
 
   try {
     console.log("Edge Function: Request received. Method:", req.method);
-    console.log("Edge Function: All headers:", Object.fromEntries(req.headers.entries()));
+    const allHeaders = Object.fromEntries(req.headers.entries());
+    console.log("Edge Function: All headers:", allHeaders);
 
-    // Lê o corpo da requisição diretamente como JSON
-    const { prompt } = await req.json();
-    console.log("Edge Function: Prompt recebido:", prompt);
+    const contentType = req.headers.get('content-type');
+    console.log("Edge Function: Content-Type header:", contentType);
+
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error("Edge Function: Invalid Content-Type. Expected application/json.");
+      return new Response(JSON.stringify({ error: "Invalid Content-Type. Expected application/json." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    let requestBody: any;
+    try {
+      requestBody = await req.json(); // Tenta analisar JSON diretamente
+      console.log("Edge Function: Successfully parsed JSON body:", requestBody);
+    } catch (parseError) {
+      console.error("Edge Function: Error parsing JSON from request body:", (parseError as Error).message);
+      // Se falhar, não tentamos ler como texto novamente para evitar consumir o stream duas vezes
+      throw new Error(`Failed to parse request body as JSON: ${(parseError as Error).message}`);
+    }
+
+    const prompt = requestBody.prompt;
+    console.log("Edge Function: Prompt extracted:", prompt);
 
     if (!prompt) {
       return new Response(JSON.stringify({ error: "O prompt é obrigatório." }), {
@@ -127,12 +148,12 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get("GEMINI_API_KEY");
+    console.log("Edge Function: GEMINI_API_KEY (exists):", !!apiKey); // Loga se a chave existe
     if (!apiKey) {
       console.error("Edge Function: GEMINI_API_KEY não está configurada!");
       throw new Error("A chave de API do Gemini não está configurada.");
     }
-    console.log("Edge Function: GEMINI_API_KEY está configurada.");
-
+    
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro", tools });
 
