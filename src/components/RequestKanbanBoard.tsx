@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import RequestKanbanColumn from './RequestKanbanColumn';
 
 interface MaintenanceRequest {
@@ -21,16 +21,22 @@ interface RequestKanbanBoardProps {
 const KANBAN_COLUMNS = ['Novo', 'Em Andamento', 'Standby', 'Concluído'];
 
 const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onStatusChange, onCardClick }) => {
-  // Configuração do PointerSensor para diferenciar clique de arrasto
-  // Aumentando ligeiramente a distância para garantir que o clique seja registrado como tal.
-  const pointerSensor = useSensor(PointerSensor, {
-    activationConstraint: {
-      delay: 250, // 250ms de atraso antes de iniciar o arrasto
-      distance: 10, // Aumentado para 10px para ser mais robusto contra cliques acidentais
-    },
+  // Configuração de restrição de ativação para evitar cliques acidentais
+  const activationConstraint = {
+    delay: 250, // 250ms de atraso antes de iniciar o arrasto
+    distance: 10, // 10px de distância antes de iniciar o arrasto
+  };
+
+  // Usando MouseSensor e TouchSensor separadamente para maior estabilidade
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: activationConstraint,
   });
   
-  const sensors = useSensors(pointerSensor);
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: activationConstraint,
+  });
+  
+  const sensors = useSensors(mouseSensor, touchSensor);
 
   const columns = useMemo(() => {
     const grouped: { [key: string]: MaintenanceRequest[] } = {
@@ -43,7 +49,6 @@ const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onSta
       if (grouped[request.status]) {
         grouped[request.status].push(request);
       } else {
-        // Se o status não for reconhecido, cai em 'Novo'
         grouped['Novo'].push(request);
       }
     });
