@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Bot, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client'; // Importação adicionada
+import { supabase } from '@/integrations/supabase/client';
 import { useSupabase } from '@/integrations/supabase/SessionContextProvider';
 
 interface Message {
@@ -18,17 +18,18 @@ interface Message {
 
 const AIAssistant: React.FC = () => {
   const { session } = useSupabase();
-  const [messages, setMessages] = useState<Message[]>([]); // Declaração adicionada
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isSending, setIsSending] = useState(false); // Declaração adicionada, renomeada de 'loading' para 'isSending' para consistência
+  const [isSending, setIsSending] = useState(false);
 
   const sendMessage = async () => {
     if (input.trim() === '') return;
 
-    const userMessage: Message = { id: messages.length + 1, sender: 'user', text: input };
+    const userMessageText = input; // Captura o valor atual do input em uma variável local
+    const userMessage: Message = { id: messages.length + 1, sender: 'user', text: userMessageText };
     setMessages((prev: Message[]) => [...prev, userMessage]);
-    setIsSending(true); // Usando isSending
-    setInput(''); // Usando setInput
+    setIsSending(true);
+    setInput(''); // Limpa o input APÓS capturar seu valor
 
     try {
       const headers: HeadersInit = {
@@ -40,7 +41,7 @@ const AIAssistant: React.FC = () => {
       }
 
       const { data, error } = await supabase.functions.invoke('gemini-chat', {
-        body: { prompt: input },
+        body: { prompt: userMessageText }, // Usa a variável local capturada
         headers: headers,
       });
 
@@ -64,7 +65,7 @@ const AIAssistant: React.FC = () => {
       const errorMessage: Message = { id: messages.length + 2, sender: 'ai', text: "Desculpe, houve um erro ao processar sua solicitação." };
       setMessages((prev: Message[]) => [...prev, errorMessage]);
     } finally {
-      setIsSending(false); // Usando isSending
+      setIsSending(false);
     }
   };
 
