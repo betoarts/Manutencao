@@ -18,9 +18,11 @@ interface RequestKanbanColumnProps {
   title: string;
   requests: MaintenanceRequest[];
   onCardClick: (request: MaintenanceRequest) => void;
+  onStatusChange: (id: string, status: string) => void; // Adicionado
+  isUpdating: boolean; // Adicionado
 }
 
-const RequestKanbanColumn: React.FC<RequestKanbanColumnProps> = ({ id, title, requests, onCardClick }) => {
+const RequestKanbanColumn: React.FC<RequestKanbanColumnProps> = ({ id, title, requests, onCardClick, onStatusChange, isUpdating }) => {
   const { setNodeRef } = useDroppable({ id });
 
   return (
@@ -33,7 +35,13 @@ const RequestKanbanColumn: React.FC<RequestKanbanColumnProps> = ({ id, title, re
       >
         <div ref={setNodeRef} className="min-h-[200px]">
           {requests.map(request => (
-            <RequestKanbanCard key={request.id} request={request} onCardClick={onCardClick} />
+            <RequestKanbanCard 
+              key={request.id} 
+              request={request} 
+              onCardClick={onCardClick} 
+              onStatusChange={onStatusChange} // Repassando
+              isUpdating={isUpdating} // Repassando
+            />
           ))}
         </div>
       </SortableContext>

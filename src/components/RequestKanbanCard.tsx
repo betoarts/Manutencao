@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Clock, Eye } from 'lucide-react';
+import RequestStatusSelector from './RequestStatusSelector'; // Importado o novo componente
 
 interface MaintenanceRequest {
   id: string;
@@ -20,6 +21,8 @@ interface MaintenanceRequest {
 interface RequestKanbanCardProps {
   request: MaintenanceRequest;
   onCardClick: (request: MaintenanceRequest) => void;
+  onStatusChange: (id: string, status: string) => void; // Adicionado
+  isUpdating: boolean; // Adicionado
 }
 
 // Função auxiliar para formatar a duração em HH:mm:ss
@@ -33,7 +36,7 @@ const formatDuration = (milliseconds: number): string => {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
-const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardClick }) => {
+const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardClick, onStatusChange, isUpdating }) => {
   const {
     attributes,
     listeners,
@@ -88,8 +91,6 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
   }, [request.status, request.started_at, request.completed_at]);
 
   const handleViewDetails = (e: React.MouseEvent) => {
-    // Impede que o evento de clique se propague para o elemento pai (o card inteiro),
-    // que também tem um onClick para abrir o modal.
     e.stopPropagation(); 
     onCardClick(request);
   };
@@ -100,11 +101,9 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
       style={style} 
       {...attributes} 
       {...listeners}
-      // Removido o onClick do div raiz para evitar conflitos com o DND.
-      // A interação agora é feita pelo botão "Detalhes".
     >
       <Card className={cn(
-        "mb-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-default", // Alterado para cursor-default
+        "mb-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-default",
         isDragging && "shadow-2xl scale-105 z-10"
       )}>
         <CardHeader className="p-4">
@@ -128,7 +127,12 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
             </div>
           )}
         </CardContent>
-        <CardFooter className="p-4 pt-0 flex justify-end">
+        <CardFooter className="p-4 pt-0 flex justify-between items-center">
+          <RequestStatusSelector 
+            currentStatus={request.status} 
+            onStatusChange={(newStatus) => onStatusChange(request.id, newStatus)}
+            isUpdating={isUpdating}
+          />
           <Button 
             variant="outline" 
             size="sm" 

@@ -38,6 +38,7 @@ const Requests = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<MaintenanceRequest> }) => updateMaintenanceRequest(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance_requests'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardKPIs'] }); // Invalida KPIs para atualizar contagem de chamados
       toast.success('Chamado atualizado com sucesso!');
       setIsFormOpen(false); // Fechar formulário após sucesso
       setEditingRequest(null); // Limpar estado de edição
@@ -51,6 +52,7 @@ const Requests = () => {
     mutationFn: deleteMaintenanceRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance_requests'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardKPIs'] }); // Invalida KPIs
       toast.success('Chamado excluído com sucesso!');
     },
     onError: (err) => {
@@ -60,15 +62,16 @@ const Requests = () => {
 
   const handleStatusChange = (id: string, newStatus: string) => {
     const requestToUpdate = requests?.find(req => req.id === id);
-    if (!requestToUpdate) return;
+    if (!requestToUpdate || requestToUpdate.status === newStatus) return;
 
     const updates: Partial<MaintenanceRequest> = { status: newStatus };
+    const now = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
     // Lógica para atualizar started_at e completed_at
     if (newStatus === 'Em Andamento' && !requestToUpdate.started_at) {
-      updates.started_at = new Date().toISOString();
+      updates.started_at = now;
     } else if (newStatus === 'Concluído' && !requestToUpdate.completed_at) {
-      updates.completed_at = new Date().toISOString();
+      updates.completed_at = now;
     } else if (newStatus !== 'Concluído' && requestToUpdate.completed_at) {
       updates.completed_at = null; // Limpa a data de conclusão se sair do status 'Concluído'
     } else if (newStatus !== 'Em Andamento' && newStatus !== 'Concluído' && requestToUpdate.started_at) {
@@ -119,7 +122,6 @@ const Requests = () => {
       updateMutation.mutate({ id: editingRequest.id, data: updates });
     }
     // Não há criação de chamado por este formulário na página de Requests, apenas edição.
-    // A criação é feita pelo formulário público.
   };
 
   const filteredRequests = useMemo(() => {
@@ -201,6 +203,7 @@ const Requests = () => {
                 requests={filteredRequests}
                 onStatusChange={handleStatusChange}
                 onCardClick={handleCardClick}
+                isUpdating={updateMutation.isPending} // Passando o estado de carregamento
               />
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400">Nenhum chamado encontrado.</p>
@@ -213,37 +216,39 @@ const Requests = () => {
               ) : error ? (
                 <p className="text-center text-red-500">Erro ao carregar chamados: {error.message}</p>
               ) : filteredRequests.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Solicitante</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Técnico</TableHead>
-                      <TableHead>Aberto em</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRequests.map((request) => (
-                      <TableRow key={request.id}>
-                        <TableCell className="font-medium">{request.requester_name}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{request.description}</TableCell>
-                        <TableCell><Badge className={getStatusBadge(request.status)}>{request.status}</Badge></TableCell>
-                        <TableCell>{request.technician_name || 'N/A'}</TableCell>
-                        <TableCell>{format(new Date(request.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => handleEditRequest(request)} className="mr-2">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteRequest(request.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Solicitante</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Técnico</TableHead>
+                        <TableHead>Aberto em</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell className="font-medium">{request.requester_name}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{request.description}</TableCell>
+                          <TableCell><Badge className={getStatusBadge(request.status)}>{request.status}</Badge></TableCell>
+                          <TableCell>{request.technician_name || 'N/A'}</TableCell>
+                          <TableCell>{format(new Date(request.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditRequest(request)} className="mr-2">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteRequest(request.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
                 <p className="text-center text-gray-500 dark:text-gray-400">Nenhum chamado encontrado.</p>
               )}

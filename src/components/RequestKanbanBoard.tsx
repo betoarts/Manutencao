@@ -16,11 +16,12 @@ interface RequestKanbanBoardProps {
   requests: MaintenanceRequest[];
   onStatusChange: (id: string, status: string) => void;
   onCardClick: (request: MaintenanceRequest) => void;
+  isUpdating: boolean; // Adicionado
 }
 
 const KANBAN_COLUMNS = ['Novo', 'Em Andamento', 'Standby', 'Concluído'];
 
-const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onStatusChange, onCardClick }) => {
+const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onStatusChange, onCardClick, isUpdating }) => {
   // Configuração de restrição de ativação para evitar cliques acidentais
   const activationConstraint = {
     delay: 250, // 250ms de atraso antes de iniciar o arrasto
@@ -49,6 +50,7 @@ const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onSta
       if (grouped[request.status]) {
         grouped[request.status].push(request);
       } else {
+        // Se o status não for reconhecido, cai em 'Novo'
         grouped['Novo'].push(request);
       }
     });
@@ -72,7 +74,15 @@ const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onSta
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex gap-6 overflow-x-auto p-2">
         {KANBAN_COLUMNS.map(col => (
-          <RequestKanbanColumn key={col} id={col} title={col} requests={columns[col]} onCardClick={onCardClick} />
+          <RequestKanbanColumn 
+            key={col} 
+            id={col} 
+            title={col} 
+            requests={columns[col]} 
+            onCardClick={onCardClick} 
+            onStatusChange={onStatusChange} // Passando para a coluna
+            isUpdating={isUpdating} // Passando para a coluna
+          />
         ))}
       </div>
     </DndContext>
