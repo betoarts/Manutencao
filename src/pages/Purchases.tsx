@@ -1,30 +1,15 @@
 import { useState, useMemo } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'; // Importado DialogDescription
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPurchase, getPurchases, updatePurchase, deletePurchase } from '@/integrations/supabase/purchases';
+import { createPurchase, getPurchases, updatePurchase, deletePurchase, Purchase } from '@/integrations/supabase/purchases';
 import PurchaseForm from '@/components/PurchaseForm';
 import { toast } from 'sonner';
 import { Pencil, Trash2, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/formatters';
-
-interface Purchase {
-  id: string;
-  asset_id: string | null;
-  product_name: string | null;
-  quantity: number | null;
-  vendor?: string;
-  purchase_date?: string | Date;
-  cost?: number;
-  invoice_number?: string;
-  notes?: string;
-  created_at: string;
-  purchase_type: 'product' | 'asset'; // Adicionada a nova coluna
-  assets: { name: string } | null; // From the join
-}
 
 const Purchases = () => {
   const queryClient = useQueryClient();
@@ -94,14 +79,21 @@ const Purchases = () => {
   const initialDataForForm = useMemo(() => {
     if (!editingPurchase) return null;
 
+    // Convertendo Purchase para o formato esperado pelo formulário (NewPurchase & { id: string })
+    // Garantindo que quantity e cost sejam number | null para corresponder ao tipo NewPurchase
     return {
-      ...editingPurchase,
-      // Garante que purchase_date seja string ou undefined/null para corresponder a NewPurchase
-      purchase_date: editingPurchase.purchase_date instanceof Date 
-                     ? format(editingPurchase.purchase_date, 'yyyy-MM-dd') 
-                     : editingPurchase.purchase_date,
-      cost: editingPurchase.cost !== undefined && editingPurchase.cost !== null ? Number(editingPurchase.cost) : undefined,
-      quantity: editingPurchase.quantity !== undefined && editingPurchase.quantity !== null ? Number(editingPurchase.quantity) : undefined,
+      id: editingPurchase.id,
+      asset_id: editingPurchase.asset_id,
+      product_name: editingPurchase.product_name,
+      quantity: editingPurchase.quantity !== null && editingPurchase.quantity !== undefined ? Number(editingPurchase.quantity) : null,
+      vendor: editingPurchase.vendor,
+      supplier_id: editingPurchase.supplier_id, // Incluindo supplier_id
+      // purchase_date já é string | null, não precisa de instanceof Date
+      purchase_date: editingPurchase.purchase_date,
+      cost: editingPurchase.cost !== null && editingPurchase.cost !== undefined ? Number(editingPurchase.cost) : null,
+      invoice_number: editingPurchase.invoice_number,
+      notes: editingPurchase.notes,
+      purchase_type: editingPurchase.purchase_type,
     };
   }, [editingPurchase]);
 
@@ -162,14 +154,14 @@ const Purchases = () => {
                     <TableCell className="font-medium">{purchase.product_name || 'N/A'}</TableCell>
                     <TableCell>{purchase.assets?.name || 'N/A (Estoque)'}</TableCell>
                     <TableCell>{purchase.quantity || 'N/A'}</TableCell>
-                    <TableCell>{purchase.vendor || 'N/A'}</TableCell>
+                    <TableCell>{purchase.suppliers?.name || purchase.vendor || 'N/A'}</TableCell> {/* Prioriza o nome do fornecedor ligado */}
                     <TableCell>{purchase.purchase_date ? format(new Date(purchase.purchase_date as string), 'dd/MM/yyyy') : 'N/A'}</TableCell>
                     <TableCell>{formatCurrency(purchase.cost)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(purchase)} className="mr-2">
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(purchase.id)} className="text-red-500 hover:text-red-700">
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(purchase.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

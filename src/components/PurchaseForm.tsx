@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,18 +15,20 @@ import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllAssets, Asset } from '@/integrations/supabase/assets';
 import { createPurchase, updatePurchase, NewPurchase } from '@/integrations/supabase/purchases';
+import { getSuppliers, Supplier } from '@/integrations/supabase/suppliers';
 import { toast } from 'sonner';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label'; // Importar Label do shadcn/ui
+import { Label } from '@/components/ui/label';
 
 const purchaseFormSchema = z.object({
-  product_name: z.string().min(1, { message: 'Nome do produto é obrigatório.' }).optional().nullable(), // Tornar opcional para ativos
+  product_name: z.string().min(1, { message: 'Nome do produto é obrigatório.' }).optional().nullable(),
   quantity: z.preprocess(
     (val) => (val === '' ? null : Number(val)),
     z.number().int('Quantidade deve ser um número inteiro.').positive('Quantidade deve ser positiva.').optional().nullable()
   ),
   asset_id: z.string().optional().nullable(),
-  vendor: z.string().optional().nullable(),
+  vendor: z.string().optional().nullable(), // Manual vendor name
+  supplier_id: z.string().uuid().optional().nullable(), // Supplier FK
   purchase_date: z.date().optional().nullable(),
   cost: z.preprocess(
     (val) => (val === '' ? null : Number(val)),
@@ -52,6 +55,14 @@ const purchaseFormSchema = z.object({
         path: ["quantity"],
       });
     }
+    // Validation for supplier/vendor: one of them must be present
+    if (!data.supplier_id && !data.vendor) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Selecione um fornecedor ou insira o nome manualmente.",
+        path: ["supplier_id"],
+      });
+    }
   } else if (data.purchase_type === "asset") {
     if (!data.asset_id) {
       ctx.addIssue({
@@ -66,9 +77,9 @@ const purchaseFormSchema = z.object({
 export type PurchaseFormValues = z.infer<typeof purchaseFormSchema>;
 
 type PurchaseFormProps = {
-  initialData?: (NewPurchase & { id: string }) | null; // Permitir null para initialData
+  initialData?: (NewPurchase & { id: string }) | null;
   onSuccess?: () => void;
-  isSubmitting: boolean; // Adicionado de volta para o componente pai controlar
+  isSubmitting: boolean;
 };
 
 const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProps) => {
@@ -80,11 +91,12 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
       quantity: initialData?.quantity || undefined,
       asset_id: initialData?.asset_id || '',
       vendor: initialData?.vendor || '',
+      supplier_id: initialData?.supplier_id || '', // Initialize with supplier_id
       purchase_date: initialData?.purchase_date ? new Date(initialData.purchase_date) : undefined,
       cost: initialData?.cost || undefined,
       invoice_number: initialData?.invoice_number || '',
       notes: initialData?.notes || '',
-      purchase_type: initialData?.purchase_type || (initialData?.asset_id ? "asset" : "product"), // Define o tipo com base na existência de asset_id ou initialData
+      purchase_type: initialData?.purchase_type || (initialData?.asset_id ? "asset" : "product"),
     },
   });
 
@@ -93,10 +105,33 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
     queryFn: getAllAssets,
   });
 
+  const { data: suppliers, isLoading: isLoadingSuppliers } = useQuery<Supplier[]>({
+    queryKey: ['suppliers'],
+    queryFn: getSuppliers,
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        product_name: initialData.product_name || '',
+        quantity: initialData.quantity || undefined,
+        asset_id: initialData.asset_id || '',
+        vendor: initialData.vendor || '',
+        supplier_id: initialData.supplier_id || '',
+        purchase_date: initialData.purchase_date ? new Date(initialData.purchase_date) : undefined,
+        cost: initialData.cost || undefined,
+        invoice_number: initialData.invoice_number || '',
+        notes: initialData.notes || '',
+        purchase_type: initialData.purchase_type,
+      });
+    }
+  }, [initialData, form]);
+
   const createMutation = useMutation({
     mutationFn: createPurchase,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success('Compra registrada com sucesso!');
       form.reset();
       onSuccess?.();
@@ -110,6 +145,7 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
     mutationFn: ({ id, data }: { id: string; data: Partial<NewPurchase> }) => updatePurchase(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success('Compra atualizada com sucesso!');
       onSuccess?.();
     },
@@ -119,13 +155,25 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
   });
 
   const onSubmit = (data: PurchaseFormValues) => {
+    const isSupplierSelected = data.supplier_id && data.supplier_id !== 'null';
+
     const purchaseData: NewPurchase = {
-      ...data,
       purchase_date: data.purchase_date ? format(data.purchase_date, 'yyyy-MM-dd') : null,
-      asset_id: data.purchase_type === "asset" ? data.asset_id : null, // Limpa asset_id se for produto
-      product_name: data.purchase_type === "product" ? data.product_name : null, // Limpa product_name se for ativo
-      quantity: data.purchase_type === "product" ? data.quantity : null, // Limpa quantity se for ativo
-      purchase_type: data.purchase_type, // Garante que purchase_type seja incluído
+      
+      // Campos específicos de tipo
+      asset_id: data.purchase_type === "asset" ? (data.asset_id || null) : null,
+      product_name: data.purchase_type === "product" ? (data.product_name || null) : null,
+      quantity: data.purchase_type === "product" ? (data.quantity ?? null) : null,
+      purchase_type: data.purchase_type,
+      
+      // Campos de fornecedor
+      supplier_id: isSupplierSelected ? (data.supplier_id || null) : null,
+      vendor: isSupplierSelected ? null : (data.vendor || null),
+      
+      // Campos opcionais que podem ser undefined no formulário, mas devem ser null no DB
+      cost: data.cost ?? null,
+      invoice_number: data.invoice_number ?? null,
+      notes: data.notes ?? null,
     };
 
     if (initialData) {
@@ -136,6 +184,7 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
   };
 
   const purchaseType = form.watch("purchase_type");
+  const selectedSupplierId = form.watch("supplier_id");
 
   return (
     <Form {...form}>
@@ -232,20 +281,61 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
             )}
           />
         )}
-
+        
+        {/* Novo campo de seleção de Fornecedor Registrado */}
         <FormField
           control={form.control}
-          name="vendor"
+          name="supplier_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Fornecedor</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value || ''} />
-              </FormControl>
+              <FormLabel>Fornecedor Registrado</FormLabel>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value === 'null' ? null : value);
+                  // Se um fornecedor registrado for selecionado, limpa o campo manual
+                  if (value !== 'null') {
+                    form.setValue('vendor', null, { shouldValidate: true });
+                  }
+                }} 
+                defaultValue={field.value || 'null'}
+                disabled={isLoadingSuppliers}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingSuppliers ? "Carregando fornecedores..." : "Selecione um fornecedor (Opcional)"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="null">Nenhum / Inserir Manualmente</SelectItem>
+                  {suppliers?.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        {/* Campo de Fornecedor Manual (visível se nenhum supplier_id estiver selecionado) */}
+        {(!selectedSupplierId || selectedSupplierId === 'null') && (
+          <FormField
+            control={form.control}
+            name="vendor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Fornecedor (Manual)</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ''} placeholder="Insira o nome do fornecedor" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="purchase_date"
@@ -324,8 +414,8 @@ const PurchaseForm = ({ initialData, onSuccess, isSubmitting }: PurchaseFormProp
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {initialData ? (isSubmitting ? 'Salvando...' : 'Salvar Alterações') : (isSubmitting ? 'Registrando...' : 'Registrar Compra')}
+        <Button type="submit" className="w-full" disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}>
+          {initialData ? (isSubmitting || updateMutation.isPending ? 'Salvando...' : 'Salvar Alterações') : (isSubmitting || createMutation.isPending ? 'Registrando...' : 'Registrar Compra')}
         </Button>
       </form>
     </Form>

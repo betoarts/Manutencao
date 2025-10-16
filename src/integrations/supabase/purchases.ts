@@ -1,16 +1,24 @@
 import { supabase } from './client';
 
-export type NewPurchase = {
-  asset_id?: string | null;
-  product_name?: string | null;
-  quantity?: number | null;
-  vendor?: string | null;
-  purchase_date?: string | null;
-  cost?: number | null;
-  invoice_number?: string | null;
-  notes?: string | null;
-  purchase_type: 'product' | 'asset'; // Adicionada a nova coluna
+export type Purchase = {
+  id: string;
+  user_id: string;
+  asset_id: string | null;
+  product_name: string | null;
+  quantity: number | null;
+  vendor: string | null; // Kept for legacy/manual entry
+  supplier_id: string | null; // New field
+  purchase_date: string | null;
+  cost: number | null;
+  invoice_number: string | null;
+  notes: string | null;
+  created_at: string;
+  purchase_type: 'product' | 'asset';
+  assets: { name: string } | null;
+  suppliers: { name: string } | null; // Joined supplier name
 };
+
+export type NewPurchase = Omit<Purchase, 'id' | 'user_id' | 'created_at' | 'assets' | 'suppliers'>;
 
 export const getPurchases = async () => {
   const { data, error } = await supabase
@@ -19,11 +27,14 @@ export const getPurchases = async () => {
       *,
       assets (
         name
+      ),
+      suppliers (
+        name
       )
     `)
     .order('purchase_date', { ascending: false });
   if (error) throw error;
-  return data;
+  return data as Purchase[];
 };
 
 export const createPurchase = async (purchaseData: NewPurchase) => {
