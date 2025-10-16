@@ -25,11 +25,11 @@ const AIAssistant: React.FC = () => {
   const sendMessage = async () => {
     if (input.trim() === '') return;
 
-    const userMessageText = input; // Captura o valor atual do input em uma variável local
+    const userMessageText = input;
     const userMessage: Message = { id: messages.length + 1, sender: 'user', text: userMessageText };
     setMessages((prev: Message[]) => [...prev, userMessage]);
     setIsSending(true);
-    setInput(''); // Limpa o input APÓS capturar seu valor
+    setInput('');
 
     try {
       const headers: HeadersInit = {
@@ -40,8 +40,12 @@ const AIAssistant: React.FC = () => {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
+      const requestBody = { prompt: userMessageText };
+      console.log("Frontend: Enviando para Edge Function. Prompt:", userMessageText);
+      console.log("Frontend: Corpo da requisição (JSON.stringify):", JSON.stringify(requestBody));
+
       const { data, error } = await supabase.functions.invoke('gemini-chat', {
-        body: { prompt: userMessageText }, // Usa a variável local capturada
+        body: JSON.stringify(requestBody), // <--- Alteração aqui: JSON.stringify explícito
         headers: headers,
       });
 
