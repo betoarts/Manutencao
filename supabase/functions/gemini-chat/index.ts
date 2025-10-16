@@ -106,13 +106,15 @@ const tools = [
   }
 ];
 
-serve(async (req: Request) => { // Tipando 'req' como Request
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { prompt } = await req.json();
+    console.log("Edge Function: Prompt recebido:", prompt);
+
     if (!prompt) {
       return new Response(JSON.stringify({ error: "O prompt é obrigatório." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -122,8 +124,10 @@ serve(async (req: Request) => { // Tipando 'req' como Request
 
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
+      console.error("Edge Function: GEMINI_API_KEY não está configurada!");
       throw new Error("A chave de API do Gemini não está configurada.");
     }
+    console.log("Edge Function: GEMINI_API_KEY está configurada.");
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro", tools });
@@ -131,6 +135,7 @@ serve(async (req: Request) => { // Tipando 'req' como Request
     // Obter o token de autenticação do usuário
     const authHeader = req.headers.get('Authorization');
     const token = authHeader ? authHeader.replace('Bearer ', '') : null;
+    console.log("Edge Function: Token de autorização presente:", !!token);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -145,8 +150,9 @@ serve(async (req: Request) => { // Tipando 'req' como Request
     // Obter o usuário autenticado para RLS e user_id
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
-      // Se não houver usuário autenticado, algumas funções podem não funcionar devido ao RLS
-      console.warn("Nenhum usuário autenticado para a Edge Function. RLS pode restringir o acesso.");
+      console.warn("Edge Function: Nenhum usuário autenticado para a Edge Function. RLS pode restringir o acesso. Erro:", userError?.message);
+    } else {
+      console.log("Edge Function: Usuário autenticado:", user.id);
     }
 
     const result = await model.generateContent({
@@ -158,6 +164,7 @@ serve(async (req: Request) => { // Tipando 'req' como Request
 
     if (functionCall) {
       const { name, args } = functionCall;
+      console.log("Edge Function: Chamada de função detectada:", name, "com argumentos:", args);
       let functionResult;
 
       switch (name) {
@@ -170,15 +177,23 @@ serve(async (req: Request) => { // Tipando 'req' como Request
             query = query.eq('status', args.status);
           }
           const { data, error } = await query;
-          if (error) throw error;
+          if (error) {
+            console.error("Edge Function: Erro ao listar ativos:", error);
+            throw error;
+          }
           functionResult = data;
+          console.log("Edge Function: Resultado de listAssets:", functionResult);
           break;
         }
         case "createAsset": {
           if (!user) throw new Error("Usuário não autenticado para criar ativos.");
           const { data, error } = await supabase.from('assets').insert({ ...args, user_id: user.id }).select().single();
-          if (error) throw error;
+          if (error) {
+            console.error("Edge Function: Erro ao criar ativo:", error);
+            throw error;
+          }
           functionResult = data;
+          console.log("Edge Function: Resultado de createAsset:", functionResult);
           break;
         }
         case "listMaintenanceRecords": {
@@ -190,8 +205,12 @@ serve(async (req: Request) => { // Tipando 'req' como Request
             query = query.eq('status', args.status);
           }
           const { data, error } = await query;
-          if (error) throw error;
+          if (error) {
+            console.error("Edge Function: Erro ao listar registros de manutenção:", error);
+            throw error;
+          }
           functionResult = data;
+          console.log("Edge Function: Resultado de listMaintenanceRecords:", functionResult);
           break;
         }
         default:
@@ -216,6 +235,7 @@ serve(async (req: Request) => { // Tipando 'req' como Request
     } else {
       // Se não houver chamada de função, retorna a resposta de texto normal
       const text = response.text();
+      console.log("Edge Function: Resposta de texto do Gemini:", text);
       return new Response(JSON.stringify({ response: text }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -223,7 +243,7 @@ serve(async (req: Request) => { // Tipando 'req' como Request
     }
 
   } catch (error) {
-    console.error("Erro na Edge Function do Gemini:", error);
+    console.error("Edge Function: Erro capturado no bloco try-catch principal:", error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
