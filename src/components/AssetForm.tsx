@@ -22,13 +22,14 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { getDepartments } from '@/integrations/supabase/departments';
 import { getProfiles } from '@/integrations/supabase/profiles';
+import { getSuppliers, Supplier } from '@/integrations/supabase/suppliers'; // Importar getSuppliers e Supplier
 
 const assetFormSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
   description: z.string().optional(),
   tag_code: z.string().min(1, { message: 'O código de identificação é obrigatório.' }),
   acquisition_date: z.date().optional(),
-  supplier: z.string().optional(),
+  supplier: z.string().optional().nullable(), // Permitir null para fornecedor
   value: z.preprocess(
     (val) => (val === '' ? undefined : Number(val)),
     z.number().positive({ message: 'O valor deve ser um número positivo.' }).optional(),
@@ -53,6 +54,7 @@ interface AssetFormProps {
 const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitting }) => {
   const { data: departments, isLoading: isLoadingDepts } = useQuery({ queryKey: ['departments'], queryFn: getDepartments });
   const { data: profiles, isLoading: isLoadingProfiles } = useQuery({ queryKey: ['profiles'], queryFn: getProfiles });
+  const { data: suppliers, isLoading: isLoadingSuppliers } = useQuery<Supplier[]>({ queryKey: ['suppliers'], queryFn: getSuppliers }); // Buscar fornecedores
 
   const form = useForm<AssetFormValues>({
     resolver: zodResolver(assetFormSchema),
@@ -61,7 +63,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
       description: '',
       tag_code: '',
       acquisition_date: undefined,
-      supplier: '',
+      supplier: null, // Definir como null por padrão
       value: undefined,
       useful_life_years: undefined,
       status: 'active',
@@ -197,9 +199,21 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
           render={({ field }) => (
             <FormItem>
               <FormLabel>Fornecedor</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome do fornecedor" {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value || ''} disabled={isLoadingSuppliers}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingSuppliers ? "Carregando..." : "Selecione um fornecedor"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">Nenhum</SelectItem> {/* Opção para limpar a seleção */}
+                  {suppliers?.map((s) => (
+                    <SelectItem key={s.id} value={s.name}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
