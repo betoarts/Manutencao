@@ -111,30 +111,32 @@ const Inventory = () => {
           </CardHeader>
           <CardContent>
             {filteredInventory && filteredInventory.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome do Produto</TableHead>
-                    <TableHead className="text-right">Quantidade em Estoque</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredInventory.map((item) => (
-                    <TableRow key={item.name}>
-                      <TableCell className="font-medium">
-                        <Button
-                          variant="link"
-                          onClick={() => handleProductClick(item.name)}
-                          className="p-0 h-auto text-base print:text-black print:no-underline"
-                        >
-                          {item.name}
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-right">{item.quantity}</TableCell>
+              <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+                <Table className="min-w-full"> {/* Adicionado min-w-full */}
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome do Produto</TableHead>
+                      <TableHead className="text-right">Quantidade em Estoque</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInventory.map((item) => (
+                      <TableRow key={item.name}>
+                        <TableCell className="font-medium">
+                          <Button
+                            variant="link"
+                            onClick={() => handleProductClick(item.name)}
+                            className="p-0 h-auto text-base print:text-black print:no-underline"
+                          >
+                            {item.name}
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">{item.quantity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400">Nenhum produto encontrado.</p>
             )}
@@ -155,28 +157,30 @@ const Inventory = () => {
                 <Skeleton className="h-8 w-full" />
               </div>
             ) : purchaseDetails && purchaseDetails.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Quantidade</TableHead>
-                    <TableHead>Custo</TableHead>
-                    <TableHead>Fornecedor</TableHead>
-                    <TableHead>Ativo Associado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {purchaseDetails.map((detail: PurchaseDetail) => (
-                    <TableRow key={detail.id}>
-                      <TableCell>{detail.purchase_date ? format(new Date(detail.purchase_date), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                      <TableCell>{detail.quantity}</TableCell>
-                      <TableCell>{formatCurrency(detail.cost)}</TableCell>
-                      <TableCell>{detail.vendor || 'N/A'}</TableCell>
-                      <TableCell>{detail.assets?.name || 'N/A'}</TableCell>
+              <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+                <Table className="min-w-full"> {/* Adicionado min-w-full */}
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Quantidade</TableHead>
+                      <TableHead>Custo</TableHead>
+                      <TableHead>Fornecedor</TableHead>
+                      <TableHead>Ativo Associado</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {purchaseDetails.map((detail: PurchaseDetail) => (
+                      <TableRow key={detail.id}>
+                        <TableCell>{detail.purchase_date ? format(new Date(detail.purchase_date), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                        <TableCell>{detail.quantity}</TableCell>
+                        <TableCell>{formatCurrency(detail.cost)}</TableCell>
+                        <TableCell>{detail.vendor || 'N/A'}</TableCell>
+                        <TableCell>{detail.assets?.name || 'N/A'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <p className="text-center text-gray-500">Nenhum histórico de compra encontrado para este produto.</p>
             )}

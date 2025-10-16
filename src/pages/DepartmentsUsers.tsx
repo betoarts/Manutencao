@@ -183,21 +183,23 @@ const DepartmentsUsers = () => {
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
               {isLoadingDepts ? <p>Carregando...</p> : (
-                <Table>
-                  <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Descrição</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    {departments?.map((dept) => (
-                      <TableRow key={dept.id}>
-                        <TableCell className="font-medium">{dept.name}</TableCell>
-                        <TableCell>{dept.description || 'N/A'}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => { setEditingDepartment(dept); setDepartmentModalOpen(true); }} className="mr-2"><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteDepartment(dept.id)} className="text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+                  <Table className="min-w-full"> {/* Adicionado min-w-full */}
+                    <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Descrição</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {departments?.map((dept) => (
+                        <TableRow key={dept.id}>
+                          <TableCell className="font-medium">{dept.name}</TableCell>
+                          <TableCell>{dept.description || 'N/A'}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => { setEditingDepartment(dept); setDepartmentModalOpen(true); }} className="mr-2"><Pencil className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteDepartment(dept.id)} className="text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           </TabsContent>
@@ -210,21 +212,23 @@ const DepartmentsUsers = () => {
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-4">
               {isLoadingProfiles ? <p>Carregando...</p> : (
-                <Table>
-                  <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Departamento</TableHead><TableHead>Role</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    {profiles?.map((profile) => (
-                      <TableRow key={profile.id}>
-                        <TableCell className="font-medium">{profile.first_name || 'Usuário'} {profile.last_name || ''}</TableCell>
-                        <TableCell>{profile.department_name || 'Sem departamento'}</TableCell>
-                        <TableCell>{profile.role}</TableCell> {/* Exibindo a role */}
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => { setEditingProfile(profile); setSelectedDepartment(profile.department_id); setSelectedRole(profile.role); }}><Pencil className="h-4 w-4" /></Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+                  <Table className="min-w-full"> {/* Adicionado min-w-full */}
+                    <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Departamento</TableHead><TableHead>Role</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {profiles?.map((profile) => (
+                        <TableRow key={profile.id}>
+                          <TableCell className="font-medium">{profile.first_name || 'Usuário'} {profile.last_name || ''}</TableCell>
+                          <TableCell>{profile.department_name || 'Sem departamento'}</TableCell>
+                          <TableCell>{profile.role}</TableCell> {/* Exibindo a role */}
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => { setEditingProfile(profile); setSelectedDepartment(profile.department_id); setSelectedRole(profile.role); }}><Pencil className="h-4 w-4" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           </TabsContent>

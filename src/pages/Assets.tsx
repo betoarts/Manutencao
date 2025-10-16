@@ -174,31 +174,33 @@ const Assets = () => {
         ) : error ? (
           <p className="text-center text-red-500">Erro ao carregar ativos: {error.message}</p>
         ) : displayedAssets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedAssets.map((asset: Asset) => (
-              <Card key={asset.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle>{asset.name}</CardTitle>
-                  <CardDescription className="flex justify-between items-center">
-                    <span>{asset.tag_code}</span>
-                    <Badge variant="secondary">{asset.status}</Badge>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  {asset.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{asset.description}</p>}
-                  {asset.acquisition_date && <p className="text-xs text-gray-500 dark:text-gray-400">Aquisição: {format(new Date(asset.acquisition_date), 'dd/MM/yyyy')}</p>}
-                  {asset.value && <p className="text-xs text-gray-500 dark:text-gray-400">Valor: {formatCurrency(asset.value)}</p>}
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(asset)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+          <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto para garantir rolagem horizontal em telas pequenas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-[300px]"> {/* min-w para garantir que o grid não encolha demais */}
+              {displayedAssets.map((asset: Asset) => (
+                <Card key={asset.id} className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle>{asset.name}</CardTitle>
+                    <CardDescription className="flex justify-between items-center">
+                      <span>{asset.tag_code}</span>
+                      <Badge variant="secondary">{asset.status}</Badge>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    {asset.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{asset.description}</p>}
+                    {asset.acquisition_date && <p className="text-xs text-gray-500 dark:text-gray-400">Aquisição: {format(new Date(asset.acquisition_date), 'dd/MM/yyyy')}</p>}
+                    {asset.value && <p className="text-xs text-gray-500 dark:text-gray-400">Valor: {formatCurrency(asset.value)}</p>}
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(asset)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           </div>
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">Nenhum ativo encontrado.</p>

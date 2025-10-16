@@ -88,7 +88,6 @@ const Purchases = () => {
       quantity: editingPurchase.quantity !== null && editingPurchase.quantity !== undefined ? Number(editingPurchase.quantity) : null,
       vendor: editingPurchase.vendor,
       supplier_id: editingPurchase.supplier_id, // Incluindo supplier_id
-      // purchase_date já é string | null, não precisa de instanceof Date
       purchase_date: editingPurchase.purchase_date,
       cost: editingPurchase.cost !== null && editingPurchase.cost !== undefined ? Number(editingPurchase.cost) : null,
       invoice_number: editingPurchase.invoice_number,
@@ -134,41 +133,43 @@ const Purchases = () => {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           {purchases && purchases.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Produto/Serviço</TableHead>
-                  <TableHead>Ativo Associado</TableHead>
-                  <TableHead>Quantidade</TableHead>
-                  <TableHead>Fornecedor</TableHead>
-                  <TableHead>Data da Compra</TableHead>
-                  <TableHead>Custo</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {purchases.map((purchase) => (
-                  <TableRow key={purchase.id}>
-                    <TableCell className="font-medium">{purchase.purchase_type === 'asset' ? 'Ativo' : 'Produto'}</TableCell>
-                    <TableCell className="font-medium">{purchase.product_name || 'N/A'}</TableCell>
-                    <TableCell>{purchase.assets?.name || 'N/A (Estoque)'}</TableCell>
-                    <TableCell>{purchase.quantity || 'N/A'}</TableCell>
-                    <TableCell>{purchase.suppliers?.name || purchase.vendor || 'N/A'}</TableCell> {/* Prioriza o nome do fornecedor ligado */}
-                    <TableCell>{purchase.purchase_date ? format(new Date(purchase.purchase_date as string), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                    <TableCell>{formatCurrency(purchase.cost)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(purchase)} className="mr-2">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(purchase.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+              <Table className="min-w-full"> {/* Adicionado min-w-full para forçar a largura total */}
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Produto/Serviço</TableHead>
+                    <TableHead>Ativo Associado</TableHead>
+                    <TableHead>Quantidade</TableHead>
+                    <TableHead>Fornecedor</TableHead>
+                    <TableHead>Data da Compra</TableHead>
+                    <TableHead>Custo</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {purchases.map((purchase) => (
+                    <TableRow key={purchase.id}>
+                      <TableCell className="font-medium">{purchase.purchase_type === 'asset' ? 'Ativo' : 'Produto'}</TableCell>
+                      <TableCell className="font-medium">{purchase.product_name || 'N/A'}</TableCell>
+                      <TableCell>{purchase.assets?.name || 'N/A (Estoque)'}</TableCell>
+                      <TableCell>{purchase.quantity || 'N/A'}</TableCell>
+                      <TableCell>{purchase.suppliers?.name || purchase.vendor || 'N/A'}</TableCell> {/* Prioriza o nome do fornecedor ligado */}
+                      <TableCell>{purchase.purchase_date ? format(new Date(purchase.purchase_date as string), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                      <TableCell>{formatCurrency(purchase.cost)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(purchase)} className="mr-2">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(purchase.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
             <p className="text-center text-gray-500 dark:text-gray-400">Nenhum registro de compra encontrado.</p>
           )}
