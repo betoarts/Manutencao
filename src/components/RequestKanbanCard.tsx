@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Clock } from 'lucide-react';
+import { Clock, Eye } from 'lucide-react';
 
 interface MaintenanceRequest {
   id: string;
@@ -86,13 +87,21 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
     }
   }, [request.status, request.started_at, request.completed_at]);
 
+  const handleViewDetails = (e: React.MouseEvent) => {
+    // Impede que o evento de clique se propague para o elemento pai (o card inteiro),
+    // que também tem um onClick para abrir o modal.
+    e.stopPropagation(); 
+    onCardClick(request);
+  };
+
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
       {...attributes} 
       {...listeners}
-      onClick={() => onCardClick(request)}
+      // Mantemos o onClick no div pai para permitir que o clique em qualquer lugar abra o modal
+      onClick={() => onCardClick(request)} 
     >
       <Card className={cn(
         "mb-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer",
@@ -119,6 +128,17 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
             </div>
           )}
         </CardContent>
+        <CardFooter className="p-4 pt-0 flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleViewDetails}
+            className="text-xs h-7"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Detalhes
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
