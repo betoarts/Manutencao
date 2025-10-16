@@ -1,0 +1,3 @@
+ALTER TABLE public.maintenance_requests
+ADD COLUMN started_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN completed_at TIMESTAMP WITH TIME ZONE;
