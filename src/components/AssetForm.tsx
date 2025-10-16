@@ -26,7 +26,7 @@ import { getSuppliers, Supplier } from '@/integrations/supabase/suppliers'; // I
 
 const assetFormSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(), // Permitir null aqui também para consistência
   tag_code: z.string().min(1, { message: 'O código de identificação é obrigatório.' }),
   acquisition_date: z.date().optional(),
   supplier: z.string().optional().nullable(), // Permitir null para fornecedor
@@ -43,7 +43,7 @@ const assetFormSchema = z.object({
   custodian_id: z.string().uuid().optional().nullable(),
 });
 
-type AssetFormValues = z.infer<typeof assetFormSchema>;
+export type AssetFormValues = z.infer<typeof assetFormSchema>; // Exportando o tipo
 
 interface AssetFormProps {
   initialData?: AssetFormValues;
@@ -146,7 +146,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
             <FormItem>
               <FormLabel>Descrição</FormLabel>
               <FormControl>
-                <Textarea placeholder="Detalhes do ativo" {...field} />
+                <Textarea placeholder="Detalhes do ativo" {...field} value={field.value || ''} /> {/* Corrigido aqui */}
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -236,7 +236,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
           name="useful_life_years"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vida Útil (anos)</FormLabel>
+              <FormLabel>Vida Útil (anos)</Label>
               <FormControl>
                 <Input type="number" placeholder="Ex: 5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
               </FormControl>

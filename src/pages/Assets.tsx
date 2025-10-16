@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'; // Removido useEffect
+import { useState, useMemo } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationNext } from '@/components/ui/pagination';
 import { formatCurrency } from '@/lib/formatters';
 import AssetForm from '@/components/AssetForm';
-import type { AssetFormValues } from '@/components/AssetForm'; // Corrigido para import type
+import type { AssetFormValues } from '@/components/AssetForm'; // Importação de tipo corrigida
 
 const PAGE_SIZE = 9;
 
@@ -130,10 +130,11 @@ const Assets = () => {
               <AssetForm
                 initialData={editingAsset ? {
                   ...editingAsset,
+                  description: editingAsset.description || undefined, // Converte null para undefined
                   acquisition_date: editingAsset.acquisition_date ? new Date(editingAsset.acquisition_date) : undefined,
                   value: editingAsset.value !== null && editingAsset.value !== undefined ? Number(editingAsset.value) : undefined,
                   useful_life_years: editingAsset.useful_life_years !== null && editingAsset.useful_life_years !== undefined ? Number(editingAsset.useful_life_years) : undefined,
-                  status: editingAsset.status as AssetFormValues['status'], // Corrigido: Type assertion para status
+                  status: editingAsset.status as AssetFormValues['status'],
                 } : undefined}
                 onSubmit={onSubmit}
                 isSubmitting={createMutation.isPending || updateMutation.isPending}
