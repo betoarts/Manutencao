@@ -133,8 +133,8 @@ const Purchases = () => {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           {purchases && purchases.length > 0 ? (
-            <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
-              <Table className="min-w-full"> {/* Adicionado min-w-full para forçar a largura total */}
+            <div className="overflow-x-auto">
+              <Table className="min-w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tipo</TableHead>

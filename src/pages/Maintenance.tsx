@@ -200,28 +200,30 @@ const Maintenance = () => {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
               {isLoading ? <p>Carregando...</p> : error ? <p className="text-red-500">Erro: {error.message}</p> : (
                 records && records.length > 0 ? (
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Ativo</TableHead><TableHead>Tipo</TableHead><TableHead>Data Agendada</TableHead><TableHead>Data Conclusão</TableHead><TableHead>Técnico</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {records.map((record) => (
-                        <TableRow key={record.id}>
-                          <TableCell className="font-medium">{record.assets?.name || 'N/A'}</TableCell>
-                          <TableCell>{record.maintenance_type}</TableCell>
-                          <TableCell>{format(new Date(record.scheduled_date), 'dd/MM/yyyy')}</TableCell>
-                          <TableCell>{record.completion_date ? format(new Date(record.completion_date), 'dd/MM/yyyy') : 'Pendente'}</TableCell>
-                          <TableCell>{record.technician_name || 'N/A'}</TableCell>
-                          <TableCell><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(record.status)}`}>{record.status}</span></TableCell>
-                          <TableCell className="text-right">
-                            {record.status !== 'Concluída' && record.status !== 'Cancelada' && (
-                              <Button variant="ghost" size="sm" onClick={() => setCompletingRecord(record)} className="mr-2 text-green-600 hover:text-green-800"><CheckCircle className="h-4 w-4" /></Button>
-                            )}
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(record)} className="mr-2"><Pencil className="h-4 w-4" /></Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(record.id)} className="text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto"> {/* Adicionado overflow-x-auto */}
+                    <Table className="min-w-full"> {/* Adicionado min-w-full */}
+                      <TableHeader><TableRow><TableHead>Ativo</TableHead><TableHead>Tipo</TableHead><TableHead>Data Agendada</TableHead><TableHead>Data Conclusão</TableHead><TableHead>Técnico</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {records.map((record) => (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-medium">{record.assets?.name || 'N/A'}</TableCell>
+                            <TableCell>{record.maintenance_type}</TableCell>
+                            <TableCell>{format(new Date(record.scheduled_date), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell>{record.completion_date ? format(new Date(record.completion_date), 'dd/MM/yyyy') : 'Pendente'}</TableCell>
+                            <TableCell>{record.technician_name || 'N/A'}</TableCell>
+                            <TableCell><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(record.status)}`}>{record.status}</span></TableCell>
+                            <TableCell className="text-right">
+                              {record.status !== 'Concluída' && record.status !== 'Cancelada' && (
+                                <Button variant="ghost" size="sm" onClick={() => setCompletingRecord(record)} className="mr-2 text-green-600 hover:text-green-800"><CheckCircle className="h-4 w-4" /></Button>
+                              )}
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(record)} className="mr-2"><Pencil className="h-4 w-4" /></Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDelete(record.id)} className="text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 ) : <p className="text-center text-gray-500">Nenhum registro de manutenção encontrado.</p>
               )}
             </div>
