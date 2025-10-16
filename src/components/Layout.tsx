@@ -143,13 +143,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </li>
             <li className="mb-2">
               <Link to="/notifications" className="flex items-center p-2 rounded-md hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:text-sidebar-accent-foreground transition-colors relative">
-                <Bell className={cn("h-5 w-5", !isSidebarCollapsed && "mr-3")} />
+                <div className="relative"> {/* Wrapper para posicionamento relativo ao ícone */}
+                  <Bell className={cn("h-5 w-5", !isSidebarCollapsed && "mr-3")} />
+                  {unreadNotificationsCount !== undefined && unreadNotificationsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
+                </div>
                 {!isSidebarCollapsed && "Notificações"}
-                {unreadNotificationsCount !== undefined && unreadNotificationsCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {unreadNotificationsCount}
-                  </span>
-                )}
               </Link>
             </li>
             <li className="mb-2">
