@@ -90,9 +90,9 @@ const Assets = () => {
     const formattedData = {
       ...data,
       acquisition_date: data.acquisition_date ? format(data.acquisition_date, 'yyyy-MM-dd') : null,
-      supplier: data.supplier === '' ? null : data.supplier,
-      department_id: data.department_id === '' ? null : data.department_id,
-      custodian_id: data.custodian_id === '' ? null : data.custodian_id,
+      supplier: data.supplier === 'null' ? null : data.supplier,
+      department_id: data.department_id === 'null' ? null : data.department_id,
+      custodian_id: data.custodian_id === 'null' ? null : data.custodian_id,
     };
 
     if (editingAsset) {
@@ -130,7 +130,7 @@ const Assets = () => {
               <AssetForm
                 initialData={editingAsset ? {
                   ...editingAsset,
-                  description: editingAsset.description || undefined, // Converte null para undefined
+                  description: editingAsset.description || undefined,
                   acquisition_date: editingAsset.acquisition_date ? new Date(editingAsset.acquisition_date) : undefined,
                   value: editingAsset.value !== null && editingAsset.value !== undefined ? Number(editingAsset.value) : undefined,
                   useful_life_years: editingAsset.useful_life_years !== null && editingAsset.useful_life_years !== undefined ? Number(editingAsset.useful_life_years) : undefined,

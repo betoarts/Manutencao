@@ -206,7 +206,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem> {/* Opção para limpar a seleção */}
+                  <SelectItem value="null">Nenhum</SelectItem> {/* Corrigido aqui */}
                   {suppliers?.map((s) => (
                     <SelectItem key={s.id} value={s.name}>
                       {s.name}
@@ -236,7 +236,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
           name="useful_life_years"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vida Útil (anos)</FormLabel> {/* Corrigido aqui */}
+              <FormLabel>Vida Útil (anos)</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="Ex: 5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
               </FormControl>
