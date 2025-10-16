@@ -112,8 +112,32 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { prompt } = await req.json();
-    console.log("Edge Function: Prompt recebido:", prompt);
+    console.log("Edge Function: Request received. Method:", req.method);
+    console.log("Edge Function: All headers:", Object.fromEntries(req.headers.entries()));
+
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error("Edge Function: Invalid Content-Type. Expected application/json, got:", contentType);
+      return new Response(JSON.stringify({ error: "Invalid Content-Type. Expected application/json." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    let requestBodyText: string;
+    let requestBody: any;
+    try {
+      requestBodyText = await req.text(); // Lê o corpo da requisição como texto
+      console.log("Edge Function: Raw request body text:", requestBodyText);
+      requestBody = JSON.parse(requestBodyText); // Tenta analisar o texto como JSON
+      console.log("Edge Function: Successfully parsed JSON body:", requestBody);
+    } catch (parseError) {
+      console.error("Edge Function: Error parsing JSON from raw body:", parseError);
+      console.error("Edge Function: Raw body that caused error:", requestBodyText);
+      throw new Error(`Failed to parse request body as JSON: ${(parseError as Error).message}`);
+    }
+
+    const prompt = requestBody.prompt;
 
     if (!prompt) {
       return new Response(JSON.stringify({ error: "O prompt é obrigatório." }), {
