@@ -232,7 +232,7 @@ const DepartmentsUsers = () => {
       </div>
 
       <Dialog open={departmentModalOpen} onOpenChange={setDepartmentModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingDepartment ? 'Editar Departamento' : 'Novo Departamento'}</DialogTitle></DialogHeader>
           <DepartmentForm
             initialData={editingDepartment || undefined}
@@ -243,14 +243,14 @@ const DepartmentsUsers = () => {
       </Dialog>
 
       <Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Convidar Novo Usuário</DialogTitle></DialogHeader>
           <UserInviteForm onSubmit={handleInviteSubmit} isSubmitting={inviteUserMutation.isPending} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!editingProfile} onOpenChange={(isOpen) => !isOpen && setEditingProfile(null)}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar Perfil do Usuário</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
             <p className="font-medium">{editingProfile?.first_name || 'Usuário'} {editingProfile?.last_name || ''}</p>

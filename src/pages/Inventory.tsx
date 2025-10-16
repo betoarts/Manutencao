@@ -143,7 +143,7 @@ const Inventory = () => {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Histórico de Compras: {selectedProduct}</DialogTitle>
           </DialogHeader>
