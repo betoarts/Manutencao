@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react'; // Removido useEffect
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,32 +13,10 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationNext } from '@/components/ui/pagination';
-import { formatCurrency } from '@/lib/formatters'; // Importando a função de formatação de moeda
-
-const assetFormSchema = z.object({
-  name: z.string().min(1, { message: 'Nome é obrigatório.' }),
-  description: z.string().optional().nullable(),
-  tag_code: z.string().min(1, { message: 'Código de identificação é obrigatório.' }),
-  acquisition_date: z.string().optional().nullable(),
-  supplier: z.string().optional().nullable(),
-  value: z.preprocess(
-    (val) => (val === '' ? null : Number(val)),
-    z.number().positive('Valor deve ser um número positivo.').optional().nullable()
-  ),
-  useful_life_years: z.preprocess(
-    (val) => (val === '' ? null : Number(val)),
-    z.number().int('Vida útil deve ser um número inteiro.').positive('Vida útil deve ser positiva.').optional().nullable()
-  ),
-  status: z.string().default('active'),
-});
-
-type AssetFormValues = z.infer<typeof assetFormSchema>;
+import { formatCurrency } from '@/lib/formatters';
+import AssetForm from '@/components/AssetForm';
+import type { AssetFormValues } from '@/components/AssetForm'; // Corrigido para import type
 
 const PAGE_SIZE = 9;
 
@@ -51,13 +29,13 @@ const Assets = () => {
   const [page, setPage] = useState(1);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const { data, isLoading, error } = useQuery<{ data: Asset[]; count: number }>({ // Corrigido: tipo de retorno
-    queryKey: ['assets', debouncedSearchTerm, page],
-    queryFn: () => getAssets({ searchTerm: debouncedSearchTerm, page, pageSize: PAGE_SIZE }), // Corrigido: passando parâmetros
+  const { data, isLoading, error } = useQuery<{ data: Asset[]; count: number }>({
+    queryKey: ['assets', debouncedSearchTerm, page, filterStatus],
+    queryFn: () => getAssets({ searchTerm: debouncedSearchTerm, page, pageSize: PAGE_SIZE }),
   });
 
-  const assets = data?.data ?? []; // Corrigido: acessando a propriedade 'data'
-  const totalCount = data?.count ?? 0; // Corrigido: acessando a propriedade 'count'
+  const assets = data?.data ?? [];
+  const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const createMutation = useMutation({
@@ -108,55 +86,30 @@ const Assets = () => {
     }
   };
 
-  const form = useForm<AssetFormValues>({
-    resolver: zodResolver(assetFormSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      tag_code: '',
-      acquisition_date: '',
-      supplier: '',
-      value: undefined,
-      useful_life_years: undefined,
-      status: 'active',
-    },
-  });
-
-  useEffect(() => { // Corrigido: de useState para useEffect
-    if (editingAsset) {
-      form.reset({
-        name: editingAsset.name,
-        description: editingAsset.description || '',
-        tag_code: editingAsset.tag_code,
-        acquisition_date: editingAsset.acquisition_date || '',
-        supplier: editingAsset.supplier || '',
-        value: editingAsset.value || undefined,
-        useful_life_years: editingAsset.useful_life_years || undefined,
-        status: editingAsset.status,
-      });
-    } else {
-      form.reset();
-    }
-  }, [editingAsset, form]);
-
   const onSubmit = (data: AssetFormValues) => {
+    const formattedData = {
+      ...data,
+      acquisition_date: data.acquisition_date ? format(data.acquisition_date, 'yyyy-MM-dd') : null,
+      supplier: data.supplier === '' ? null : data.supplier,
+      department_id: data.department_id === '' ? null : data.department_id,
+      custodian_id: data.custodian_id === '' ? null : data.custodian_id,
+    };
+
     if (editingAsset) {
-      updateMutation.mutate({ id: editingAsset.id, data });
+      updateMutation.mutate({ id: editingAsset.id, data: formattedData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(formattedData);
     }
   };
 
-  const statusOptions = ['active', 'inactive', 'maintenance', 'retired'];
+  const statusOptions = ['active', 'in_maintenance', 'depreciated'];
 
-  const filteredAssets = useMemo(() => {
-    let filtered = assets;
-
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(asset => asset.status === filterStatus);
+  const displayedAssets = useMemo(() => {
+    if (!assets) return [];
+    if (filterStatus === 'all') {
+      return assets;
     }
-    // A lógica de busca já está no getAssets, então não precisamos filtrar aqui novamente pelo searchTerm
-    return filtered;
+    return assets.filter(asset => asset.status === filterStatus);
   }, [assets, filterStatus]);
 
   return (
@@ -174,126 +127,17 @@ const Assets = () => {
               <DialogHeader>
                 <DialogTitle>{editingAsset ? 'Editar Ativo' : 'Adicionar Novo Ativo'}</DialogTitle>
               </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="tag_code"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Código de Identificação</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descrição</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} value={field.value || ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="acquisition_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data de Aquisição</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} value={field.value || ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="supplier"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fornecedor</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Valor (R$)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} value={field.value === undefined || field.value === null ? '' : field.value} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="useful_life_years"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vida Útil (Anos)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} value={field.value === undefined || field.value === null ? '' : field.value} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {statusOptions.map(status => (
-                              <SelectItem key={status} value={status}>{status}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingAsset ? (updateMutation.isPending ? 'Salvando...' : 'Salvar Alterações') : (createMutation.isPending ? 'Adicionando...' : 'Adicionar Ativo')}
-                  </Button>
-                </form>
-              </Form>
+              <AssetForm
+                initialData={editingAsset ? {
+                  ...editingAsset,
+                  acquisition_date: editingAsset.acquisition_date ? new Date(editingAsset.acquisition_date) : undefined,
+                  value: editingAsset.value !== null && editingAsset.value !== undefined ? Number(editingAsset.value) : undefined,
+                  useful_life_years: editingAsset.useful_life_years !== null && editingAsset.useful_life_years !== undefined ? Number(editingAsset.useful_life_years) : undefined,
+                  status: editingAsset.status as AssetFormValues['status'], // Corrigido: Type assertion para status
+                } : undefined}
+                onSubmit={onSubmit}
+                isSubmitting={createMutation.isPending || updateMutation.isPending}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -328,9 +172,9 @@ const Assets = () => {
           <p className="text-center text-gray-500 dark:text-gray-400">Carregando ativos...</p>
         ) : error ? (
           <p className="text-center text-red-500">Erro ao carregar ativos: {error.message}</p>
-        ) : filteredAssets.length > 0 ? (
+        ) : displayedAssets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAssets.map((asset: Asset) => ( // Corrigido: tipagem explícita para 'asset'
+            {displayedAssets.map((asset: Asset) => (
               <Card key={asset.id} className="flex flex-col">
                 <CardHeader>
                   <CardTitle>{asset.name}</CardTitle>
