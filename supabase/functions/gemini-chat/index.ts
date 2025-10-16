@@ -113,7 +113,7 @@ serve(async (req: Request) => {
 
   let prompt: string;
   let requestBody: any;
-  let requestBodyText: string = ''; // Inicializa com string vazia
+  let requestBodyText: string = '';
 
   try {
     console.log("Edge Function: Request received. Method:", req.method);
@@ -132,13 +132,16 @@ serve(async (req: Request) => {
     }
 
     try {
+      console.log("Edge Function: Attempting to read request body as text...");
       requestBodyText = await req.text(); // Lê o corpo da requisição como texto primeiro
-      console.log("Edge Function: Raw request body text:", requestBodyText);
+      console.log("Edge Function: Raw request body text received:", requestBodyText);
 
-      if (!requestBodyText.trim()) { // Verifica se o corpo está vazio ou contém apenas espaços em branco
+      if (!requestBodyText.trim()) {
+        console.error("Edge Function: Request body is empty or contains only whitespace.");
         throw new Error("Request body is empty or contains only whitespace.");
       }
 
+      console.log("Edge Function: Attempting to parse JSON from text...");
       requestBody = JSON.parse(requestBodyText); // Tenta analisar o texto como JSON
       console.log("Edge Function: Successfully parsed JSON body:", requestBody);
       prompt = requestBody.prompt;
