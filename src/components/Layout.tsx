@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Settings, Package, ShoppingCart, Users, Wrench, LogOut, Box, ClipboardList, ListTodo, Bell, ChevronLeft, ChevronRight, Truck, CalendarDays, Brain } from 'lucide-react'; // Importação de Brain
+import { Home, Settings, Package, ShoppingCart, Users, Wrench, LogOut, Box, ClipboardList, ListTodo, Bell, ChevronLeft, ChevronRight, Truck, CalendarDays } from 'lucide-react'; // Importação de Brain removida
 import { Button } from '@/components/ui/button';
 import { useSupabase } from '@/integrations/supabase/SessionContextProvider';
 import { MadeWithDyad } from './made-with-dyad';
@@ -154,12 +154,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 {!isSidebarCollapsed && "Notificações"}
               </Link>
             </li>
-            <li className="mb-2">
-              <Link to="/ai-assistant" className="flex items-center p-2 rounded-md hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:text-sidebar-accent-foreground transition-colors">
-                <Brain className={cn("h-5 w-5", !isSidebarCollapsed && "mr-3")} />
-                {!isSidebarCollapsed && "Assistente IA"}
-              </Link>
-            </li>
+            {/* Item de menu "Assistente IA" removido */}
             <li className="mb-2">
               <Link to="/departments-users" className="flex items-center p-2 rounded-md hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:text-sidebar-accent-foreground transition-colors">
                 <Users className={cn("h-5 w-5", !isSidebarCollapsed && "mr-3")} />
