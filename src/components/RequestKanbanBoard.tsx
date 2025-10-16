@@ -21,7 +21,15 @@ interface RequestKanbanBoardProps {
 const KANBAN_COLUMNS = ['Novo', 'Em Andamento', 'Standby', 'Concluído'];
 
 const RequestKanbanBoard: React.FC<RequestKanbanBoardProps> = ({ requests, onStatusChange, onCardClick }) => {
-  const sensors = useSensors(useSensor(PointerSensor));
+  // Configuração do PointerSensor para diferenciar clique de arrasto
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      delay: 250, // 250ms de atraso antes de iniciar o arrasto
+      distance: 5, // 5px de distância antes de iniciar o arrasto
+    },
+  });
+  
+  const sensors = useSensors(pointerSensor);
 
   const columns = useMemo(() => {
     const grouped: { [key: string]: MaintenanceRequest[] } = {

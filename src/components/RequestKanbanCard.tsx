@@ -100,11 +100,11 @@ const RequestKanbanCard: React.FC<RequestKanbanCardProps> = ({ request, onCardCl
       style={style} 
       {...attributes} 
       {...listeners}
-      // Mantemos o onClick no div pai para permitir que o clique em qualquer lugar abra o modal
-      onClick={() => onCardClick(request)} 
+      // Removido o onClick do div raiz para evitar conflitos com o DND.
+      // A interação agora é feita pelo botão "Detalhes".
     >
       <Card className={cn(
-        "mb-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer",
+        "mb-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-default", // Alterado para cursor-default
         isDragging && "shadow-2xl scale-105 z-10"
       )}>
         <CardHeader className="p-4">
