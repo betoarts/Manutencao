@@ -146,7 +146,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
             <FormItem>
               <FormLabel>Descrição</FormLabel>
               <FormControl>
-                <Textarea placeholder="Detalhes do ativo" {...field} value={field.value || ''} /> {/* Corrigido aqui */}
+                <Textarea placeholder="Detalhes do ativo" {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -236,7 +236,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ initialData, onSubmit, isSubmitti
           name="useful_life_years"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vida Útil (anos)</Label>
+              <FormLabel>Vida Útil (anos)</FormLabel> {/* Corrigido aqui */}
               <FormControl>
                 <Input type="number" placeholder="Ex: 5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
               </FormControl>
