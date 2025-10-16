@@ -22,7 +22,8 @@ import Requests from "./pages/Requests";
 import Tasks from "./pages/Tasks";
 import NotificationsPage from "./pages/Notifications";
 import Suppliers from "./pages/Suppliers";
-import CalendarView from "./pages/CalendarView"; // Importação adicionada
+import CalendarView from "./pages/CalendarView";
+import AIAssistant from "./pages/AIAssistant"; // Importação adicionada
 
 export const queryClient = new QueryClient(); // Exportando o queryClient
 
@@ -47,11 +48,12 @@ const AppWrapper = () => (
             <Route path="/maintenance" element={<ProtectedRoute><Maintenance /></ProtectedRoute>} />
             <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
             <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-            <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} /> {/* Nova rota adicionada */}
+            <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
             <Route path="/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/departments-users" element={<ProtectedRoute><DepartmentsUsers /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} /> {/* Nova rota adicionada */}
 
             <Route path="*" element={<NotFound />} />
           </Routes>
