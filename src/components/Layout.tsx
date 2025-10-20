@@ -205,7 +205,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-4 w-64 flex flex-col bg-sidebar dark:bg-sidebar-background">
+              <SheetContent side="left" className="p-4 w-64 flex flex-col bg-sidebar dark:bg-sidebar-background overflow-y-auto">
                 {/* Conteúdo do Sheet é o mesmo da Sidebar, mas não recolhível */}
                 {renderSidebarContent(false, () => setIsSheetOpen(false))}
               </SheetContent>
