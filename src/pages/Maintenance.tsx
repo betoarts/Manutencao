@@ -13,7 +13,7 @@ import MaintenanceForm from '@/components/MaintenanceForm';
 import KanbanBoard from '@/components/KanbanBoard';
 import { toast } from 'sonner';
 import { Pencil, Trash2, PlusCircle, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import MaintenanceDetailModal from '@/components/MaintenanceDetailModal';
 
 interface MaintenanceRecord {
@@ -217,7 +217,7 @@ const Maintenance = () => {
                                 <Button variant="ghost" size="sm" onClick={() => setCompletingRecord(record)} className="mr-2 text-green-600 hover:text-green-800"><CheckCircle className="h-4 w-4" /></Button>
                               )}
                               <Button variant="ghost" size="sm" onClick={() => handleEdit(record)} className="mr-2"><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="destructive" size="sm" onClick={() => handleDelete(record.id)} className="text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDelete(record.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50"><Trash2 className="h-4 w-4" /></Button>
                             </TableCell>
                           </TableRow>
                         ))}

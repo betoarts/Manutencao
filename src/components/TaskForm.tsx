@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -77,7 +77,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, isSubmitting
             <FormItem>
               <FormLabel>Descrição</FormLabel>
               <FormControl>
-                <Textarea placeholder="Detalhes da tarefa" {...field} value={field.value || ''} />
+                <Textarea {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,9 +154,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialData, onSubmit, isSubmitting
                   <Input placeholder="Nome do responsável" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+            </FormItem>
+          )}
+        />
         )}
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Salvando...' : 'Salvar Tarefa'}

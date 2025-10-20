@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { useQuery } from '@tanstack/react-query';
 import { getPublicFormFields } from '@/integrations/supabase/publicForm';
 import { MaintenanceRequest } from '@/integrations/supabase/maintenance_requests';

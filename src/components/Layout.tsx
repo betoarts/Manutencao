@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, Settings, Package, ShoppingCart, Users, Wrench, LogOut, Box, ClipboardList, ListTodo, Bell, ChevronLeft, ChevronRight, Truck, CalendarDays, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSupabase } from '@/integrations/supabase/SessionContextProvider';
 import { MadeWithDyad } from './made-with-dyad';
 import { useQuery } from '@tanstack/react-query';
@@ -66,6 +67,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMobile = useIsMobile();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(isMobile);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // Função para gerar iniciais do usuário
+  const getUserInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return 'U';
+    const firstInitial = firstName?.charAt(0)?.toUpperCase() || '';
+    const lastInitial = lastName?.charAt(0)?.toUpperCase() || '';
+    return (firstInitial + lastInitial).slice(0, 2);
+  };
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -140,6 +149,24 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <NavLinks isCollapsed={isCollapsed} onLinkClick={onLinkClick} />
       </nav>
       <div className="mt-auto">
+        {!isCollapsed && profile && (
+          <div className="flex items-center space-x-3 p-2 mb-4 rounded-md bg-sidebar-accent dark:bg-sidebar-accent">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile.avatar_url || ''} alt="Avatar do usuário" />
+              <AvatarFallback className="text-sm font-medium">
+                {getUserInitials(profile.first_name, profile.last_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
+                {profile.first_name} {profile.last_name}
+              </p>
+              <p className="text-xs text-sidebar-foreground/70 truncate">
+                {profile.role === 'admin' ? 'Administrador' : 'Usuário'}
+              </p>
+            </div>
+          </div>
+        )}
         <Button
           onClick={handleLogout}
           variant="ghost"
@@ -188,7 +215,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {settings?.company_name || 'Sistema de Gestão'}
           </h1>
           <div className="flex items-center space-x-4">
-            <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">Olá, {profile?.first_name || 'Usuário'}!</span>
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url || ''} alt="Avatar do usuário" />
+                <AvatarFallback className="text-sm font-medium">
+                  {getUserInitials(profile?.first_name, profile?.last_name)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">
+                Olá, {profile?.first_name || 'Usuário'}!
+              </span>
+            </div>
             <Link to="/notifications" className="relative">
               <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
               {unreadNotificationsCount !== undefined && unreadNotificationsCount > 0 && (

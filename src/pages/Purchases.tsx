@@ -8,7 +8,7 @@ import { createPurchase, getPurchases, updatePurchase, deletePurchase, Purchase 
 import PurchaseForm from '@/components/PurchaseForm';
 import { toast } from 'sonner';
 import { Pencil, Trash2, PlusCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { formatCurrency } from '@/lib/formatters';
 
 const Purchases = () => {

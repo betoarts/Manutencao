@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { cn } from '@/lib/utils';
 import { Clock, Eye } from 'lucide-react';
 import RequestStatusSelector from './RequestStatusSelector'; // Importado o novo componente

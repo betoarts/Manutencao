@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 
 interface MaintenanceRecord {
   id: string;

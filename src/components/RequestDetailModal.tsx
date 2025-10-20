@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { Badge } from '@/components/ui/badge';
 
 interface MaintenanceRequest {

@@ -9,9 +9,11 @@ Este é um sistema completo para gestão de ativos, manutenção, controle de es
 *   **Gestão de Estoque:** Monitore o estoque de produtos e peças, com baixa automática ao serem utilizados em manutenções e restauração em caso de cancelamento.
 *   **Gestão de Compras:** Registre todas as compras de ativos e produtos, associando-os a ativos específicos ou ao estoque geral.
 *   **Chamados de Manutenção:** Permita que usuários externos ou internos abram chamados de manutenção através de um formulário público personalizável. Gerencie esses chamados em um quadro Kanban separado.
+*   **Dashboard Inteligente:** Visualize KPIs importantes, gráficos de custos de manutenção e distribuição de ativos. **Novo:** Cards destacados para chamados abertos com contadores em tempo real e navegação rápida.
+*   **Perfil de Usuário com Avatar:** **Novo:** Sistema completo de upload de fotos de perfil com validação, preview e exibição na barra superior e sidebar.
 *   **Gestão de Departamentos e Usuários:** Organize seus usuários em departamentos e convide novos membros para o sistema.
-*   **Dashboard:** Visualize KPIs importantes e gráficos de custos de manutenção e distribuição de ativos para uma visão geral rápida.
-*   **Configurações:** Personalize o perfil do usuário, o logo da empresa e os campos do formulário público de chamados.
+*   **Configurações Avançadas:** Personalize o perfil do usuário, avatar, logo da empresa, favicon, som de notificação e campos do formulário público de chamados.
+*   **Notificações em Tempo Real:** Sistema de notificações com som personalizado e contadores visuais.
 *   **Autenticação Segura:** Utiliza o Supabase Auth para gerenciamento de usuários e sessões.
 
 ## Tecnologias Utilizadas
@@ -22,6 +24,29 @@ Este é um sistema completo para gestão de ativos, manutenção, controle de es
 *   **Roteamento:** React Router DOM
 *   **Backend:** Supabase (Auth, Database, Storage, Edge Functions)
 *   **Outros:** Zod (validação de formulários), date-fns (manipulação de datas), Recharts (gráficos), jsPDF (geração de PDF).
+
+## 🆕 Novas Funcionalidades Implementadas
+
+### Sistema de Avatar de Usuário
+- **Upload de Fotos:** Interface intuitiva para upload de fotos de perfil com validação de tipo e tamanho
+- **Preview em Tempo Real:** Visualização imediata da foto selecionada antes do upload
+- **Validação Inteligente:** Suporte para JPG, PNG, GIF e WebP com limite de 5MB
+- **Fallback Elegante:** Exibição de iniciais do usuário quando não há foto
+- **Integração Completa:** Avatar exibido na barra superior e sidebar do sistema
+- **Storage Seguro:** Upload direto para Supabase Storage com políticas RLS configuradas
+
+### Dashboard Inteligente
+- **Cards de Alerta:** Notificações destacadas para chamados abertos que requerem atenção
+- **Contadores em Tempo Real:** Visualização instantânea de chamados abertos, em andamento e agendados
+- **Navegação Rápida:** Botões diretos para gerenciar chamados e acessar funcionalidades
+- **Status Visual:** Cores e ícones diferenciados por status dos chamados
+- **Design Responsivo:** Adaptação perfeita para desktop e mobile
+
+### Melhorias na Interface
+- **Botões Otimizados:** Design mais elegante para ações de edição e exclusão
+- **Tema Dark/Light:** Suporte completo para ambos os temas
+- **Feedback Visual:** Estados de loading e mensagens de sucesso/erro
+- **Acessibilidade:** Melhor suporte para screen readers e navegação por teclado
 
 ## Pré-requisitos
 
@@ -87,11 +112,19 @@ As migrações do banco de dados já estão incluídas na pasta `supabase/migrat
 
 #### c. Configuração de Storage (Armazenamento)
 
-Para o upload de logos da empresa, você precisará configurar um bucket de armazenamento:
+Para o upload de logos da empresa e avatares de usuários, você precisará configurar buckets de armazenamento:
 
+**Bucket para Logos da Empresa:**
 1.  No Supabase Dashboard, vá para `Storage`.
 2.  Crie um novo bucket chamado `company_assets`.
 3.  Defina as políticas de acesso para este bucket. As migrações já incluem políticas para permitir upload e download de arquivos públicos.
+
+**Bucket para Avatares de Usuários:**
+1.  Crie um segundo bucket chamado `avatars`.
+2.  Configure as políticas RLS para permitir que usuários autenticados façam upload de seus próprios avatares.
+3.  As migrações incluem políticas automáticas para este bucket.
+
+**Nota:** Os buckets são criados automaticamente pelas migrações do banco de dados, mas você pode verificar se foram criados corretamente no Supabase Dashboard.
 
 #### d. Edge Functions
 
@@ -112,6 +145,27 @@ npm run dev
 ```
 
 A aplicação estará disponível em `http://localhost:8080` (ou outra porta, se configurada).
+
+## 🚀 Como Usar as Novas Funcionalidades
+
+### Upload de Avatar
+1. **Acesse Configurações:** Vá para o menu lateral e clique em "Configurações"
+2. **Abra a aba Perfil:** Selecione a aba "Perfil" nas configurações
+3. **Adicione sua foto:** Clique em "Adicionar" na seção de foto do perfil
+4. **Selecione uma imagem:** Escolha uma foto (JPG, PNG, GIF ou WebP até 5MB)
+5. **Confirme o upload:** A foto será enviada automaticamente e aparecerá na barra superior
+
+### Dashboard Inteligente
+1. **Visualize chamados abertos:** O dashboard mostra automaticamente cards de alerta quando há chamados pendentes
+2. **Acesse rapidamente:** Use os botões "Ver Chamados" para ir direto à gestão de chamados
+3. **Monitore status:** Acompanhe contadores em tempo real de chamados abertos, em andamento e agendados
+4. **Navegação intuitiva:** Clique nos cards para acessar funcionalidades específicas
+
+### Personalização Avançada
+1. **Logo da empresa:** Configure o logo na aba "Identidade Visual" das configurações
+2. **Favicon personalizado:** Faça upload de um favicon personalizado
+3. **Som de notificação:** Configure um som personalizado para notificações
+4. **Campos customizados:** Adicione campos personalizados ao formulário público de chamados
 
 ### 5. Implantação com Docker (Opcional)
 
@@ -173,6 +227,36 @@ O Easypanel simplifica a implantação de aplicações Docker. Siga estes passos
     *   Monitore os logs de build e implantação no Easypanel para garantir que tudo ocorra sem erros.
 
 Com essas configurações, seu aplicativo será implantado e estará acessível através do domínio configurado no Easypanel.
+
+## 📋 Changelog
+
+### Versão 2.0.0 - Outubro 2025
+
+#### ✨ Novas Funcionalidades
+- **Sistema de Avatar de Usuário**
+  - Upload de fotos de perfil com validação
+  - Preview em tempo real
+  - Exibição na barra superior e sidebar
+  - Fallback com iniciais do usuário
+  - Storage seguro no Supabase
+
+- **Dashboard Inteligente**
+  - Cards de alerta para chamados abertos
+  - Contadores em tempo real
+  - Navegação rápida para gestão de chamados
+  - Status visual com cores e ícones
+
+#### 🎨 Melhorias na Interface
+- Botões de ação otimizados
+- Suporte aprimorado para temas dark/light
+- Feedback visual melhorado
+- Acessibilidade aprimorada
+
+#### 🔧 Melhorias Técnicas
+- Configuração automática de buckets de storage
+- Políticas RLS otimizadas
+- Validação de upload aprimorada
+- Performance melhorada
 
 ---
 

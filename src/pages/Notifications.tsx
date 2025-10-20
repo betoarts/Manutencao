@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, markNotificationAsRead, Notification } from '@/integrations/supabase/notifications';
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { CheckCircle, MailOpen, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';

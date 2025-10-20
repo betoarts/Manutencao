@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useSupabase } from '@/integrations/supabase/SessionContextProvider';
-import { format } from 'date-fns'; // Importação adicionada
+import { format } from 'date-fns/format'; // Importação adicionada
 
 interface Task extends TaskData {
   id: string;

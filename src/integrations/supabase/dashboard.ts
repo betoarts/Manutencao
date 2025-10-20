@@ -1,5 +1,7 @@
 import { supabase } from './client';
-import { startOfMonth, subMonths, format } from 'date-fns';
+import { startOfMonth } from 'date-fns/startOfMonth';
+import { subMonths } from 'date-fns/subMonths';
+import { format } from 'date-fns/format';
 
 export const getDashboardKPIs = async () => {
   const { count: assetsInMaintenance, error: assetsError } = await supabase

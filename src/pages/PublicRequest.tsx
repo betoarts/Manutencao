@@ -11,7 +11,7 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Importado para exibir resultados
 import { Badge } from '@/components/ui/badge'; // Importado para exibir status
-import { format } from 'date-fns'; // Importado para formatar datas
+import { format } from 'date-fns/format'; // Importado para formatar datas
 import { MaintenanceRequest } from '@/integrations/supabase/maintenance_requests'; // Importado o tipo
 
 const PublicRequest = () => {

@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 
 const Settings = () => {
   const queryClient = useQueryClient();
@@ -78,7 +78,11 @@ const Settings = () => {
               <CardContent>
                 {isLoadingProfile ? <p>Carregando...</p> : profile && (
                   <ProfileForm
-                    initialData={{ first_name: profile.first_name || '', last_name: profile.last_name || '' }}
+                    initialData={{ 
+                      first_name: profile.first_name || '', 
+                      last_name: profile.last_name || '',
+                      avatar_url: profile.avatar_url || ''
+                    }}
                     onSubmit={(data) => updateProfileMutation.mutate(data)}
                     isSubmitting={updateProfileMutation.isPending}
                   />

@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllAssets, Asset } from '@/integrations/supabase/assets';
 import { createPurchase, updatePurchase, NewPurchase } from '@/integrations/supabase/purchases';
